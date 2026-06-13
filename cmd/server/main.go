@@ -8,6 +8,7 @@ import (
 	_ "github.com/soorajsomans/url-shortener/docs"
 	"github.com/soorajsomans/url-shortener/internal/generator"
 	"github.com/soorajsomans/url-shortener/internal/handler"
+	"github.com/soorajsomans/url-shortener/internal/messaging"
 	"github.com/soorajsomans/url-shortener/internal/repository"
 	"github.com/soorajsomans/url-shortener/internal/service"
 )
@@ -19,10 +20,16 @@ func main() {
 
 	codeGenerator := generator.NewBase62Generator()
 
+	producer := messaging.NewKafkaProducer(
+		[]string{"localhost:9092"},
+		"url-events",
+	)
+
 	urlService := service.NewURLService(
 		repo,
 		idGenerator,
 		codeGenerator,
+		producer,
 	)
 
 	urlHandler := handler.NewURLHandler(

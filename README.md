@@ -329,8 +329,98 @@ All repository and service methods accept `context.Context` to support:
 * Dependency Injection
 * Interface-Based Design
 
+
+---
+## Analytics Dashboard
+
+The URL Shortener publishes events to Kafka whenever a URL is created or visited. These events will later be consumed by a dedicated Analytics Service to generate click statistics and dashboards.
+
+Event Flow
+URL Shortener
+      |
+      ▼
+Kafka Topic (url-events)
+      |
+      ▼
+Analytics Service
+      |
+      ▼
+PostgreSQL
+      |
+      ▼
+Analytics Dashboard
+Kafka Setup
+Create Kafka Topic
+
+Access the Kafka container:
+
+docker exec -it kafka bash
+
+Create the topic:
+
+/opt/kafka/bin/kafka-topics.sh \
+--create \
+--topic url-events \
+--bootstrap-server localhost:9092
+
+Expected output:
+
+Created topic url-events.
+List Topics
+/opt/kafka/bin/kafka-topics.sh \
+--list \
+--bootstrap-server localhost:9092
+
+Expected output:
+
+url-events
+Listen to Events
+
+Start a console consumer:
+
+/opt/kafka/bin/kafka-console-consumer.sh \
+--topic url-events \
+--from-beginning \
+--bootstrap-server localhost:9092
+Sample Events
+URL Created Event
+{
+  "event_type": "URL_CREATED",
+  "url_id": 100001,
+  "short_code": "Q0v",
+  "long_url": "https://onlineksrtcswift.com/",
+  "created_at": "2026-06-13T06:59:21.067133Z"
+}
+URL Visited Event
+{
+  "event_type": "URL_VISITED",
+  "url_id": 100001,
+  "short_code": "Q0v",
+  "visited_at": "2026-06-13T07:04:57.303508Z"
+}
+Published Events
+Event Type	Description
+URL_CREATED	Published whenever a new short URL is created
+URL_VISITED	Published whenever a short URL is accessed
+Future Enhancements
+
+The Analytics Service will consume events from the url-events topic and provide:
+
+Total Click Count
+URL-wise Analytics
+Top Performing URLs
+Daily Click Statistics
+Real-Time Dashboard
+Historical Trend Analysis
+Geographic Analytics
+Device & Browser Analytics
+
+This event-driven architecture ensures that analytics processing does not impact URL redirection latency and can scale independently from the URL Shortener service.
+
+
 ---
 
 ## License
 
 This project is intended for learning, and demonstration purposes.
+
